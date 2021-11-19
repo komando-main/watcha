@@ -1,18 +1,41 @@
-import requests
+# Selenium 임포트
+from selenium import webdriver
+# 키보드 down키(↓)를 누르게 하기 위해 Keys 임포트
+from selenium.webdriver.common.keys import Keys
+# Beautiful Soup 임포트
 from bs4 import BeautifulSoup
 
+# csv 파일 생성을 위해 임포트
+import csv
+csv_fileName = 'watcha.csv'
 
-watcha_resul = requests.get("https://pedia.watcha.com/ko-KR")
+csv_open = open(csv_fileName, 'w+', encoding='utf-8')
+csv_writer = csv.writer(csv_open)
 
-watcha_soup = BeautifulSoup(watcha_resul.text, 'html.parser')
+csv_writer.writerow(('image'))
 
-ebeya3l5 = watcha_soup.find('div', {"class":'css-6kwoq4-StyledHorizontalScrollInnerContainer ebeya3l5'})
-ul = ebeya3l5.find('ul')
+PATH = "/MYStudy/Python_Study/csv"
+driver = webdriver.Chrome(PATH)
 
-divs = ul.find_all('div',{'class':'css-5yuqaa'})
-for div in divs:
-  print(div.text)
+driver.get("https://watcha.com/staffmades/410")
 
-imgs = ul.find_all('img')
-for img in imgs:
-  print(img.get('src'))
+body = driver.find_element_by_css_selector("body")
+
+for i in range(100):
+    keys = body.send_keys(Keys.PAGE_DOWN)
+    
+htmlsrc = driver.page_source
+bs = BeautifulSoup(htmlsrc, 'html.parser')
+
+wrapper = bs.find_all('span', {"class" : "css-1te5psz-StyledBackground e1q5rx9q1"})
+
+images_wrap = []
+    
+for images in wrapper:
+    image = images.find('span', class_="css-1te5psz-StyledBackground e1q5rx9q1")['style']
+    url_text = image.split('background-image: url("')[1][23:-3]
+    images_wrap.append(url_text)
+
+csv_open.close()
+
+driver.quit()
